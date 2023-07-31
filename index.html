@@ -19,43 +19,58 @@
   <input type="text" id="nameInput" />
   <button id="downloadButton">Download PDF</button>
 
-  <script>
+ <!-- Your HTML code remains the same -->
+
+<script>
     async function downloadPDF() {
       const name = document.getElementById("nameInput").value;
-
+      const todayDate = new Date().toLocaleDateString(); // Get today's date
+  
       // Load the existing PDF as a blob
       const response = await fetch("Penpals.pdf");
       const existingPdfBytes = await response.arrayBuffer();
-
+  
       // Load the PDF document
       const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-
-      // Create a new page to add the user's name as a stamp
+  
+      // Create a new page to add the user's name and date as stamps
       const [page] = pdfDoc.getPages();
       const nameStamp = name;
-
+      const dateStamp = todayDate;
+  
       // Add the user's name as a stamp on the page
       const { width, height } = page.getSize();
       const fontSize = 20;
+      const fontSize1 = 16;
       const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+  
       const nameWidth = font.widthOfTextAtSize(nameStamp, fontSize);
       const nameX = (width - nameWidth) / 2;
       const nameY = height - 358;
       page.drawText(nameStamp, { x: nameX, y: nameY, size: fontSize, font });
-
+  
+      // Add the date as a stamp on the page
+      const dateWidth = font.widthOfTextAtSize(dateStamp, fontSize);
+      const dateX = (width - dateWidth) / 2;
+      const dateY = height - 605; // Adjust the vertical position to place it at the desired location
+      page.drawText(dateStamp, { x: dateX, y: dateY, size: fontSize1, font });
+  
       // Serialize the modified PDF document
       const pdfBytes = await pdfDoc.save();
-
+  
       // Trigger the download
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${name}_penpals.pdf`;
+      link.download = `${name}_${todayDate}_penpals.pdf`;
       link.click();
     }
-
+  
     document.getElementById("downloadButton").addEventListener("click", downloadPDF);
   </script>
+  
+  <!-- Your closing body and html tags remain the same -->
+  
 </body>
 </html>
