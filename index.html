@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>PDF Download</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- pdf-lib CDN link -->
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/3.10.0/pdf-lib.js"
+  integrity="sha512-HAsJjmlO+7JkH+aXrAekYIuHf2yAlL3xKt6jjWVna1u1t4VdqnH+uTnXFvdcY8jW9vt4oE2HmAD3JqHLCaJ5g=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script type="module" src="https://unpkg.com/pdf-lib@1.4.0"></script>
+</head>
+<body>
+  <label for="nameInput">Enter your name:</label>
+  <input type="text" id="nameInput" />
+  <button id="downloadButton">Download PDF</button>
+
+  <script>
+    async function downloadPDF() {
+      const name = document.getElementById("nameInput").value;
+
+      // Load the existing PDF as a blob
+      const response = await fetch("Penpals.pdf");
+      const existingPdfBytes = await response.arrayBuffer();
+
+      // Load the PDF document
+      const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+
+      // Create a new page to add the user's name as a stamp
+      const [page] = pdfDoc.getPages();
+      const nameStamp = name;
+
+      // Add the user's name as a stamp on the page
+      const { width, height } = page.getSize();
+      const fontSize = 20;
+      const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const nameWidth = font.widthOfTextAtSize(nameStamp, fontSize);
+      const nameX = (width - nameWidth) / 2;
+      const nameY = height - 358;
+      page.drawText(nameStamp, { x: nameX, y: nameY, size: fontSize, font });
+
+      // Serialize the modified PDF document
+      const pdfBytes = await pdfDoc.save();
+
+      // Trigger the download
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${name}_penpals.pdf`;
+      link.click();
+    }
+
+    document.getElementById("downloadButton").addEventListener("click", downloadPDF);
+  </script>
+</body>
+</html>
